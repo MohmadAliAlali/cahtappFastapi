@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${DB_NAME:-chatdb}
+      POSTGRES_USER: ${DB_USER:-chatapp}
+      POSTGRES_PASSWORD: ${DB_PASS:-strongpassword}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - backend
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7-alpine
+    networks:
+      - backend
+    ports:
+      - "6379:6379"
+
+  app:
+    build: .
+    depends_on:
+      - db
+      - redis
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${DB_USER:-chatapp}:${DB_PASS:-strongpassword}@db:5432/${DB_NAME:-chatdb}
+      REDIS_URL: redis://redis:6379/0
+      SECRET_KEY: ${SECRET_KEY:-change-me-to-a-random-secret}
+      JWT_ALGORITHM: HS256
+      ACCESS_TOKEN_EXPIRE_MINUTES: 15
+      REFRESH_TOKEN_EXPIRE_DAYS: 30
+      EMAIL_HOST: ${EMAIL_HOST:-smtp.example.com}
+      EMAIL_PORT: ${EMAIL_PORT:-587}
+      EMAIL_USER: ${EMAIL_USER:-no-reply@domain.com}
+      EMAIL_PASS: ${EMAIL_PASS:-password}
+    networks:
+      - backend
+    ports:
+      - "8000:8000"
+
+networks:
+  backend:
+
+volumes:
+  pgdata:
