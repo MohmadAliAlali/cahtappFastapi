@@ -5,7 +5,7 @@ import socketio
 import urllib.parse
 from jose import jwt, JWTError
 from sqlalchemy import select
-
+from app.models.message import Conversation, ConversationParticipant
 from app.core.config import settings
 from app.core.redis_client import get_redis
 from app.db.session import async_session_factory
@@ -155,7 +155,7 @@ async def send_message(sid, data):
                 reply_to_id=reply_to_id,
             )
         except Exception as e:
-            logger.error("send_message: save failed: %s", e, exc_info=True)
+            logger.error("send_message: save failed for user=%s conv=%s: %s", user_id, conversation_id, e, exc_info=True)
             await sio.emit("error", {"message": f"Save failed: {str(e)}"}, to=sid)
             return
 

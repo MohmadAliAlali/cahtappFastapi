@@ -521,7 +521,7 @@ async def _check_membership(db: AsyncSession, conversation_id: str, user_id: str
     if not result.scalar_one_or_none():
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not a member of this conversation",
+            detail=f"Not a member of this conversation (conv={conversation_id}, user={user_id})",
         )
 
 
